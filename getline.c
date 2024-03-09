@@ -1,18 +1,44 @@
 #include "simple_shell.h"
 
 /**
- * _strlen - my own strlen function
- * @str: buffer
+ * _fileno - returns the integer file descriptor used to implement this stream
+ * @stream: FILE type pointer
  *
- * Return: char length
+ * Return: fd (SUCCESS), -1 (FAIL)
  **/
-size_t _strlen(char *str)
+int _fileno(FILE *stream)
 {
-	size_t i;
+	int fd = stream->_fileno;
 
-	for (i = 0; str[i]; i++)
-		;
-	return (i);
+	if (fd < 0)
+	{
+		perror("Invalid stream");
+		return (-1);
+	}
+	return (fd);
+}
+
+/**
+ * _fgetc - reads the next character from stream and returns it
+ * @stream: pointer to FILE type
+ *
+ * Return: unsigned char cast to an int, or EOF on end of file or error
+ **/
+int _fgetc(FILE *stream)
+{
+	int c;
+	int fd = _fileno(stream);
+
+	if (fd == -1)
+	{
+		perror("file descriptor");
+		return (-1);
+	}
+	if (read(fd, &c, 1) != 1)
+	{
+		return (-1);
+	}
+	return (c);
 }
 
 /**
@@ -21,42 +47,47 @@ size_t _strlen(char *str)
  * @n: number of chars to write
  * @stream: I/O channel to write to
  *
- * Return: >= 0 (SUCCESS), < 0 (FAIL)
+ * Return: number of characters read,
+ *         but not including the terminating null byte ('\0') (SUCCESS)
+ *         -1 on failure to read a line (including EOF condition)
  **/
 ssize_t _getline(char **lineptr, size_t *n, FILE *stream)
 {
-	ssize_t read_chars;
-	size_t len = 0;
-	char *tempbuffer;
-	int c;
+	size_t read_chars = 0, size = 128;
+	char *buffer = *lineptr;
+	char c;
 
-	if (lineptr == NULL || n == NULL)
+	if (lineptr == NULL || n == NULL || stream == NULL)
 		return (-1);
-	*lineptr = NULL, *n = 0;
-	while ((c = _fgetc(stream)) != '\n')
+	if (*lineptr == NULL && *n == 0)
 	{
-		if (*n >= len)
+		buffer = malloc(sizeof(char) * size);
+		if (buffer == NULL)
 		{
-			len += 128;
-			tempbuffer = realloc(*lineptr, len);
-			if (tempbuffer == NULL)
+			return (-1);
+		}
+		*lineptr = buffer, *n = 0;
+	}
+	while ((c = _fgetc(stream)) != EOF)
+	{
+		*n += read_chars;
+		buffer[read_chars++] = c;
+		if (c == '\n')
+		{
+			buffer[read_chars] = '\0';
+			return (read_chars);
+		}
+		if (read_chars == size)
+		{
+			size *= 2;
+			buffer = realloc(buffer, size);
+			if (buffer == NULL)
 			{
 				free(*lineptr);
 				return (-1);
 			}
-			*lineptr = tempbuffer;
 		}
-		if (c == EOF)
-		{
-			(*lineptr)[*n] = '\0';
-			return (*n);
-		}
-		(*lineptr)[(*n)++] = c;
 	}
-	if (*n > 0)
-		(*lineptr)[*n] = '\0';
-	else
-		return (-1);
-	read_chars = *n;
-	return (read_chars);
+	buffer[read_chars] = '\0';
+	return (-1);
 }

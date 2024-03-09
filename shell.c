@@ -6,23 +6,21 @@
 int
 main(void)
 {
+	pid_t child_pid;
 	char *line = NULL;
 	size_t len = 0;
-	ssize_t nread = 0;
-	char *argv[] = { NULL };
-	pid_t child_pid;
+	int nread = 0;
+	char *argv[2];
 
+	argv[0] = NULL, argv[1] = NULL;
 	while (1)
 	{
-		printf("#cisfun$ ");
+		if (isatty(STDIN_FILENO))
+			printf("#cisfun$ ");
 		fflush(stdout);
 		nread = _getline(&line, &len, stdin);
-		fflush(stdin);
-		if (nread == -1)
-		{
-			perror("getline");
-			exit(EXIT_FAILURE);
-		}
+		if (nread == EOF)
+			break;
 		child_pid = fork();
 		if (child_pid < 0)
 		{
@@ -31,9 +29,11 @@ main(void)
 		}
 		if (child_pid == 0)
 		{
+			line[_strcspn(line, "\n")] = '\0';
 			if (execve(line, argv, environ) < 0)
 			{
 				perror("./shell");
+				exit(EXIT_FAILURE);
 			}
 			exit(EXIT_SUCCESS);
 		}
