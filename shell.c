@@ -10,9 +10,8 @@ main(void)
 	char *line = NULL;
 	size_t len = 0;
 	int nread = 0;
-	char *argv[2];
+	char *argv[2] = {line, NULL};
 
-	argv[0] = NULL, argv[1] = NULL;
 	while (1)
 	{
 		if (isatty(STDIN_FILENO))
