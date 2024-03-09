@@ -10,7 +10,7 @@ main(void)
 	char *line = NULL;
 	size_t len = 0;
 	int nread = 0;
-	char *argv[2] = {line, NULL};
+	char *argv[] = {"/bin/ls", NULL};
 
 	while (1)
 	{
