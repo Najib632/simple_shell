@@ -3,8 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-int
-main(void)
+/**
+ * main - entry point
+ * 
+ * Return: Always 0 (SUCCESS)
+ **/
+int main(void)
 {
 	pid_t child_pid;
 	char *line = NULL;
@@ -15,8 +19,10 @@ main(void)
 	while (1)
 	{
 		if (isatty(STDIN_FILENO))
+		{
 			printf("#cisfun$ ");
-		fflush(stdout);
+			fflush(stdout);
+		}
 		nread = _getline(&line, &len, stdin);
 		if (nread == EOF)
 			break;
