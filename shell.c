@@ -31,6 +31,7 @@ main(void)
 			line[_strcspn(line, "\n")] = '\0';
 			if (execve(line, argv, environ) < 0)
 			{
+				free(line);
 				exit(EXIT_FAILURE);
 			}
 			free(line);
